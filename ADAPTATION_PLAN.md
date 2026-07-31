@@ -245,7 +245,30 @@ user override → category default → fallback_models → hardcoded chain → s
 - Worktree: per-agent git isolation
 
 ---
+## Priority 10: LOW — Additional Packages (Discovered in audit)
+
+| Package | Purpose | Effort |
+|---------|---------|--------|
+| **shared-skills** | Cross-harness skills bundle (git-master, playwright, frontend, review) | 3h |
+| **omo-config-core** | Harness-neutral config schema (zod + loader + migration) | 2h |
+| **boulder-state** | Work-tracking state machine (JSON-based) | 1.5h |
+| **hashline-core** | Hash-anchored edit primitives (line hashing + validation) | 2h |
+| **prompts-core** | Markdown prompt loading + variant routing | 1.5h |
+| **lsp-tools-mcp** | LSP tools via stdio MCP | 3h |
+| **git-bash-mcp** | Windows Git Bash MCP (skip — platform specific) | — |
+| **senpi-task** | Task state machine + runners | 3h |
+| **telemetry-core** | PostHog telemetry (env-gated opt-out) | 1h |
+| **comment-checker-core** | Comment validation | 1h |
+
+**Most promising adaptations:**
+- `shared-skills` — 12 builtin skills we don't have (git-master, playwright, frontend)
+- `omo-config-core` — could improve our config management
+- `boulder-state` — cross-session work tracking
+
+---
+
 ## Implementation Order
+
 
 1. **Week 1:** Council consensus skill (Priority 1) + agent formalization (Priority 2)
 2. **Week 2:** smartfetch tools (Priority 3) + ast-grep tools (Priority 4)
