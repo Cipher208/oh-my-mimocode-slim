@@ -80,11 +80,15 @@ jobs:
       - name: Install Bun dependencies
         run: bun install --frozen-lockfile 2>/dev/null || true
 
+      - name: Install TypeScript types
+        run: |
+          bun install --dev @types/node 2>/dev/null || true
+
       - name: TypeScript check
         run: |
           for hook in hooks/*.ts; do
             echo "Typechecking $hook..."
-            bunx tsc --noEmit "$hook" --skipLibCheck --module nodenext --moduleResolution nodenext 2>&1 || {
+            bunx tsc --noEmit "$hook" --skipLibCheck --module esnext --moduleResolution bundler --types node 2>&1 || {
               echo "TypeScript error in $hook (may be env-specific)"
             }
           done
