@@ -51,6 +51,11 @@ You have the context and the task. Execute it.
 3. Run tests
 4. Report completion
 
+## Prompt Configuration
+
+Full system prompt defined centrally in `agent-prompts.json`: `agents.fixer`.
+Load via: `bun scripts/prompt-loader.mjs fixer "question"`
+
 ## Integration
 
 | Skill | How Fixer connects |

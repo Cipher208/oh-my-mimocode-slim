@@ -127,6 +127,11 @@ Council can be configured via the question prompt:
 - [ ] **Timeout exclusion** — councillors who don't respond in ~60s excluded with note
 - [ ] **Bias tracking** — flag councillors who consistently disagree without justification
 
+## Prompt Configuration
+
+Full system prompt defined centrally in `agent-prompts.json`: `agents.council`.
+Load via: `bun scripts/prompt-loader.mjs council "question"`
+
 ## Integration with Other Skills
 
 | Skill | How it connects |

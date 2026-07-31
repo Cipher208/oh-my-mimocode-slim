@@ -61,6 +61,11 @@ Interpret images, screenshots, PDFs, and diagrams. Extract structured observatio
 </observation>
 ```
 
+## Prompt Configuration
+
+Full system prompt defined centrally in `agent-prompts.json`: `agents.observer`.
+Load via: `bun scripts/prompt-loader.mjs observer "question"`
+
 ## Integration
 
 | Skill | How Observer connects |
