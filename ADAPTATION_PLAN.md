@@ -267,23 +267,51 @@ user override → category default → fallback_models → hardcoded chain → s
 
 ---
 
+## Improvements (Planned Enhancements)
+
+| Enhancement | Priority | Effort | Description |
+|-------------|----------|--------|-------------|
+| Unioned prompt loader | MEDIUM | 2h | Centralize agent prompts in `skills/_agents/prompts.json` |
+| Structured permissions | HIGH | 2h | Add `permissions: readonly/tools/allow/temperature` to frontmatter |
+| Prompt inheritance | MEDIUM | 3h | base + custom + append pattern in skill config |
+| Multi-model councillors | MEDIUM | 2h | Councillor seats (alpha/beta/gamma/delta) with different models |
+| `/agent <name>` command | LOW | 1h | Slash command to dispatch specific agent |
+
+**Structured permissions format:**
+```yaml
+---
+name: oracle
+permissions:
+  readonly: true
+  allow: [read, grep, glob, codesearch]
+  deny: [edit, write, bash, task]
+temperature: 0.1
+---
+```
+
+---
+
 ## Implementation Order
 
-
-1. **Week 1:** Council consensus skill (Priority 1) + agent formalization (Priority 2)
+1. **Week 1:** Council consensus skill (Priority 1) + agent formalization (Priority 2) ✅
 2. **Week 2:** smartfetch tools (Priority 3) + ast-grep tools (Priority 4)
 3. **Week 3:** image-hook (Priority 5) + cancel-task tool (Priority 7)
-4. **Week 4:** deepwork + worktrees skills (Priority 6+7) + remaining hooks (Priority 8)
+4. **Week 4:** deepwork + worktrees skills (Priority 6+7) + remaining hooks
+
+Then implement Improvements (unioned prompt loader, structured permissions, etc.)
 
 ## Files Created
 
 - [x] `ADAPTATION_PLAN.md` — comprehensive adaptation plan
-- [ ] `skills/council.md` — multi-model consensus skill (NEW Priority 1)
-- [ ] `skills/oracle.md` — strategic advisor skill
-- [ ] `skills/librarian.md` — research specialist skill
-- [ ] `skills/explorer.md` — codebase navigation skill
+- [x] `docs/agent-orchestration-analysis.md` — deep agent research
+- [x] `docs/openagent-exploration.md` — openagent repo survey
+- [x] `skills/council.md` — multi-model consensus skill ✅
+- [x] `skills/oracle.md` — strategic advisor skill ✅
+- [x] `skills/librarian.md` — research specialist skill ✅
+- [x] `skills/explorer.md` — codebase navigation skill ✅
+- [x] `skills/fixer.md` — implementation specialist skill ✅
+- [x] `skills/observer.md` — visual analysis skill ✅
+- [x] `skills/designer.md` — UI/UX specialist skill ✅
 - [ ] `tools/smartfetch.ts` — intelligent web fetch
 - [ ] `tools/ast-grep.ts` — AST code intelligence
 - [ ] `hooks/foreground-fallback.ts` — error recovery system
-- [ ] `tools/ast-grep.ts` — AST code intelligence
-- [ ] `tools/smartfetch.ts` — intelligent web fetch
