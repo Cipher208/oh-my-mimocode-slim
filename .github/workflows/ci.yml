@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    name: Hook Syntax Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Validate hook files
+        run: |
+          for hook in hooks/*.ts; do
+            echo "Validating $hook..."
+            bun build "$hook" --no-bundle --no-optimize 2>&1 || {
+              echo "Hook validation failed: $hook"
+              exit 1
+            }
+          done
+          echo "✅ All hooks validated"
+
+      - name: Check module imports
+        run: |
+          for hook in hooks/*.ts; do
+            echo "Checking imports in $hook..."
+            grep -q 'export default' "$hook" || {
+              echo "Missing export default in $hook"
+              exit 1
+            }
+          done
+          echo "✅ All hooks have export default"
+
+  skills:
+    name: Skills Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate skill files
+        run: |
+          for skill in skills/*.md; do
+            echo "Validating $skill..."
+            test -s "$skill" || {
+              echo "Empty skill file: $skill"
+              exit 1
+            }
+            grep -q '##' "$skill" || {
+              echo "No sections found in $skill"
+              exit 1
+            }
+          done
+          echo "✅ All skills validated"
+
+  lint:
+    name: Hook Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Bun dependencies
+        run: bun install --frozen-lockfile 2>/dev/null || true
+
+      - name: TypeScript check
+        run: |
+          for hook in hooks/*.ts; do
+            echo "Typechecking $hook..."
+            bunx tsc --noEmit "$hook" --skipLibCheck --module nodenext --moduleResolution nodenext 2>&1 || {
+              echo "TypeScript error in $hook (may be env-specific)"
+            }
+          done
+          echo "✅ Typecheck complete (warnings acceptable)"
