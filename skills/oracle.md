@@ -1,6 +1,11 @@
 ---
 name: oracle
 description: "Strategic technical advisor — architecture decisions, complex debugging, code review, simplification, engineering guidance. Read-only: advises, doesn't implement."
+permissions:
+  readonly: true
+  allow: [read, grep, glob, codesearch, webfetch]
+  deny: [edit, write, apply_patch, bash, task, question]
+  temperature: 0.1
 metadata:
   short-description: Strategic technical advisor for architecture and code review
   category: analysis

@@ -1,6 +1,11 @@
 ---
 name: designer
 description: "UI/UX specialist — crafts and reviews cohesive user experiences. Typography, color, interactive components, design systems."
+permissions:
+  readonly: false
+  allow: [read, write, edit, web]
+  deny: [bash, task, question]
+  temperature: 0.5
 metadata:
   short-description: UI/UX design and prototyping specialist  
   category: design

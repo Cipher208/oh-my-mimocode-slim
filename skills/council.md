@@ -1,6 +1,11 @@
 ---
 name: council
 description: "Multi-model consensus skill — dispatches 3-4 models in parallel to answer a question, then synthesizes their responses into a structured Council Report with consensus level, agreed/disputed points, and final recommendation."
+permissions:
+  readonly: true
+  allow: []
+  deny: ["*"]
+  temperature: 0.2
 metadata:
   short-description: Multi-model consensus via parallel subagent dispatch
   category: decision-making
