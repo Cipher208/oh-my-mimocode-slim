@@ -216,6 +216,35 @@ export const ALL_AGENT_NAMES = [
 
 **Effort:** 1.5 hours
 
+## NEW: oh-my-openagent Findings (2026-08-01)
+
+**Research:** https://github.com/code-yeongyu/oh-my-openagent (43-package monorepo)
+
+### High-Priority Additions:
+
+| Component | Source | Purpose | Effort |
+|-----------|--------|---------|--------|
+| **Hyperplan skill** | .agents/skills/hyperplan/ | 5-agent adversarial cross-critique planning | 6h |
+| **Delegate fallback chain** | packages/delegate-core/ | 7-level model fallback chain | 3h |
+| **Team primitives** | packages/team-core/ | Registry, mailbox, tasklist, state store | 4h |
+
+### Hyperplan Adaptation for MiMoCode:
+1. Create `skills/hyperplan.md` — dispatch oracle/librarian/explorer as "hostile reviewers"
+2. Each reviews plan independently, then we synthesize defensible insights
+3. Use compose:debate pattern for cross-critique
+
+### Model Failover Upgrade:
+Current: single fallback. New chain from delegate-core:
+```
+user override → category default → fallback_models → hardcoded chain → system default
+```
+
+### Team-Core Integration:
+- Mailbox: async subagent messaging
+- Tasklist: shared task state
+- Worktree: per-agent git isolation
+
+---
 ## Implementation Order
 
 1. **Week 1:** Council consensus skill (Priority 1) + agent formalization (Priority 2)
