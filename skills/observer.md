@@ -1,6 +1,11 @@
 ---
 name: observer
 description: "Visual analysis specialist — interprets images, screenshots, PDFs, diagrams. Extracts structured observations."
+permissions:
+  readonly: true
+  allow: [read, grep, vision, webfetch]
+  deny: [edit, write, bash, task]
+  temperature: 0.5
 metadata:
   short-description: Visual content analysis and screenshot interpretation
   category: analysis

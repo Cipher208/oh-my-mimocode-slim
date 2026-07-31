@@ -1,6 +1,11 @@
 ---
 name: librarian
 description: "Research specialist for codebases and documentation. Searches external repos, finds official docs, locates implementation examples, understands library internals."
+permissions:
+  readonly: true
+  allow: [read, grep, glob, agent-reach, webfetch]
+  deny: [edit, write, bash, task]
+  temperature: 0.3
 metadata:
   short-description: Codebase research and official documentation lookup
   category: research

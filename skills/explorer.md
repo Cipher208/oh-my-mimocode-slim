@@ -1,6 +1,11 @@
 ---
 name: explorer
 description: "Fast codebase navigation — grep, AST search, file discovery. Answer 'where is X?', 'find Y', 'which file has Z'."
+permissions:
+  readonly: true
+  allow: [read, grep, glob, codesearch, webfetch]
+  deny: [edit, write, apply_patch, bash, task, question]
+  temperature: 0.1
 metadata:
   short-description: Codebase navigation and discovery specialist
   category: navigation

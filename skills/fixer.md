@@ -1,6 +1,11 @@
 ---
 name: fixer
 description: "Fast implementation specialist — executes code changes efficiently. Receives complete context from research, implements without re-researching."
+permissions:
+  readonly: false
+  allow: [read, grep, glob, edit, write, bash, test]
+  deny: [task, question]
+  temperature: 0.1
 metadata:
   short-description: Code implementation and bug fix specialist
   category: implementation
