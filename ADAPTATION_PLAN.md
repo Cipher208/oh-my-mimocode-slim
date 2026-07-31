@@ -2,11 +2,40 @@
 
 ## Summary of Findings
 
-Research of https://github.com/alvinunreal/oh-my-opencode-slim revealed 10 high-value component categories for adaptation to MiMoCode (updated with agent orchestration).
+Research of https://github.com/alvinunreal/oh-my-opencode-slim revealed 10 high-value component categories for adaptation to MiMoCode (updated after brainstorm — foreground-fallback, auto-update-checker, and filter-available-skills excluded as too heavy / low ROI). Council consensus skill added as Priority 1.
 
 ---
 
-## Priority 1: HIGH — Agent Orchestration System (Missing!)
+## Priority 1: HIGH — Council Consensus Skill (NEW!)
+
+**Inspiration:** `alvinunreal/oh-my-opencode-slim/src/agents/{council,councillor,orchestrator}.ts` (26.9K+ lines)
+
+**What it does:**
+Multi-model consensus pattern — dispatch 3-4 different models (deepseek, gemini, kimi) in parallel as subagents, each with the same prompt, then synthesize their responses into a structured council report.
+
+**Key patterns from slim:**
+- Councillor seats: alpha, beta, gamma, delta (different models)
+- Council agent (no tools) receives all councillor responses
+- Synthesis: agreements → contradictions → resolution → final answer
+- Required output format:
+  ```
+  ## Council Response
+  ## Per-Councillor Details (alpha, beta, gamma, delta)
+  ## Council Summary (Consensus, Agreed Points, Disagreements, Recommended Action)
+  ```
+
+**Adaptation for MiMoCode:**
+1. Create `skills-native/council.md` Skill
+2. Implement as `/council "question"` slash command
+3. Use `delegate_task` to dispatch 3 models in parallel (deepseek-v4-flash, gemini-flash, kimi-k3)
+4. Synthesize responses via prompt injection
+5. No tools for council agent — pure text synthesis
+
+**Effort:** 2-3 hours (lightweight, high-impact)
+
+---
+
+## Priority 2: HIGH — Agent Orchestration System
 
 **Source:** `/tmp/oh-my-opencode-slim/src/agents/`
 - `index.ts` — agent registry & factory (368+ lines)
@@ -46,18 +75,17 @@ export const ALL_AGENT_NAMES = [
 3. Implement council consensus pattern as skill chain
 4. Add `/agent <name>` slash command
 
-**Effort:** 6-8 hours (highest architectural impact)
+**Adaptation for MiMoCode:**
+1. Formalize existing skills (oracle, librarian, explorer) with proper prompts
+2. Create `skills/native/fixer.md` and `skills/native/observer.md`
+3. Implement council consensus as skill chain (covered by Priority 1)
+4. Add `/agent <name>` slash command for direct dispatch
+
+**Effort:** 4-5 hours (formalization + fixer/observer)
 
 ---
 
-## Priority 1b: HIGH — foreground-fallback (Error Recovery System)
-
-## Priority 2: HIGH — foreground-fallback (Error Recovery System)
-
-**Source:** `/tmp/oh-my-opencode-slim/src/hooks/foreground-fallback/`
-- `index.ts` — 26.9K lines, 49.9K lines tests
-- **What it does:** Detects LLM errors (rate limit, auth, timeout, quota), suggests fallback models, handles retry logic
-- **Novel patterns:**
+## Priority 3: HIGH — smartfetch Tools (Intelligent Web Fetch)
   - `isFailoverError()` — error pattern classification
   - `isRetryableError()` — retry eligibility
   - `ForegroundFallbackManager` — state machine for model switching
@@ -177,8 +205,6 @@ export const ALL_AGENT_NAMES = [
 | **post-file-tool-nudge** | `post-file-tool-nudge/` | Post-tool workflow hints | 1h |
 | **task-session-manager** | `task-session-manager/` | Task session lifecycle | 2h |
 | **cache-monitor** | `cache-monitor/` | Monitor context cache usage | 1h |
-| **auto-update-checker** | `auto-update-checker/` | Check for hook updates | 1h |
-| **filter-available-skills** | `filter-available-skills/` | Hide unavailable skills | 1h |
 
 ---
 
@@ -192,18 +218,20 @@ export const ALL_AGENT_NAMES = [
 
 ## Implementation Order
 
-1. **Week 1:** Agent orchestration system (Priority 1) — oracle/librarian/explorer specialists
-2. **Week 2:** foreground-fallback (Priority 2) + ast-grep tools (Priority 4)
-3. **Week 3:** smartfetch tools (Priority 3) + image-hook (Priority 5)
-4. **Week 4:** deepwork + worktrees skills (Priority 6+7) + remaining tools/hooks
+1. **Week 1:** Council consensus skill (Priority 1) + agent formalization (Priority 2)
+2. **Week 2:** smartfetch tools (Priority 3) + ast-grep tools (Priority 4)
+3. **Week 3:** image-hook (Priority 5) + cancel-task tool (Priority 7)
+4. **Week 4:** deepwork + worktrees skills (Priority 6+7) + remaining hooks (Priority 8)
 
 ## Files Created
 
 - [x] `ADAPTATION_PLAN.md` — comprehensive adaptation plan
-- [ ] `skills/oracle.md` — strategic advisor agent
-- [ ] `skills/librarian.md` — research specialist agent  
-- [ ] `skills/explorer.md` — codebase navigation agent
-- [ ] `skills/council.md` — multi-model consensus agent
+- [ ] `skills/council.md` — multi-model consensus skill (NEW Priority 1)
+- [ ] `skills/oracle.md` — strategic advisor skill
+- [ ] `skills/librarian.md` — research specialist skill
+- [ ] `skills/explorer.md` — codebase navigation skill
+- [ ] `tools/smartfetch.ts` — intelligent web fetch
+- [ ] `tools/ast-grep.ts` — AST code intelligence
 - [ ] `hooks/foreground-fallback.ts` — error recovery system
 - [ ] `tools/ast-grep.ts` — AST code intelligence
 - [ ] `tools/smartfetch.ts` — intelligent web fetch
