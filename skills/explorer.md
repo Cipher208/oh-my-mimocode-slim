@@ -77,6 +77,11 @@ Concise answer to the question
 4. **Direct quotes** — when showing code, quote exact lines
 5. **No speculation** — "I didn't find it" beats guessing
 
+## Prompt Configuration
+
+Full system prompt defined centrally in `agent-prompts.json`: `agents.explorer`.
+Load via: `bun scripts/prompt-loader.mjs explorer "question"`
+
 ## Integration
 
 | Skill | How Explorer connects |

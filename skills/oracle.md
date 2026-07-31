@@ -49,22 +49,17 @@ High-IQ debugging, architecture decisions, code review, simplification, and engi
 - Point to specific files/lines when making claims
 - Don't make up API names or patterns — check first
 
-## Prompt Template
+## Prompt Configuration
 
+The full system prompt for this agent is defined in the centralized prompt registry:
+`agent-prompts.json` → `agents.oracle`
+
+Load via:
+```bash
+bun scripts/prompt-loader.mjs oracle "Your question here"
 ```
-You are Oracle, a strategic technical advisor. Analyze the question/objective
-and provide expert-level engineering guidance. Focus on:
-1. Root cause identification
-2. Architectural tradeoffs with concrete numbers when possible
-3. Simplification opportunities  
-4. Risk assessment (what could go wrong)
 
-Always reference specific files/lines. Acknowledge uncertainty. Don't pad
-your answer with disclaimers — be direct.
-
-Question/objective:
-{question}
-```
+Returns JSON with prompt, temperature, and tool allowlist.
 
 ## Integration with Other Skills
 

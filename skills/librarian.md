@@ -63,6 +63,11 @@ Key API signatures or config patterns.
 Based on the evidence, do X because Y. Caveat: Z.
 ```
 
+## Prompt Configuration
+
+Full system prompt defined centrally in `agent-prompts.json`: `agents.librarian`.
+Load via: `bun scripts/prompt-loader.mjs librarian "question"`
+
 ## Integration
 
 | Skill | How Librarian connects |

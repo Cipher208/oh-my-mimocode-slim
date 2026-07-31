@@ -73,6 +73,11 @@ export function Header() {
 }
 ```
 
+## Prompt Configuration
+
+Full system prompt defined centrally in `agent-prompts.json`: `agents.designer`.
+Load via: `bun scripts/prompt-loader.mjs designer "question"`
+
 ## Integration
 
 | Skill | How Designer connects |
