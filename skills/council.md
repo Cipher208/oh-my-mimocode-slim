@@ -113,6 +113,14 @@ Council can be configured via the question prompt:
 - Model availability varies — skip unavailable models
 - Max ~4 councillors (diminishing returns beyond that)
 - Responses take ~3x longer than single agent (parallel dispatch)
+- **No automatic follow-up** — if split consensus, user must ask explicitly
+
+## Enhancements (TO-DO)
+
+- [ ] **Quality scoring** — rank councillor responses by specificity/examples
+- [ ] **Automatic follow-up** — if split consensus on high-stakes question, propose re-dispatch
+- [ ] **Timeout exclusion** — councillors who don't respond in ~60s excluded with note
+- [ ] **Bias tracking** — flag councillors who consistently disagree without justification
 
 ## Integration with Other Skills
 
