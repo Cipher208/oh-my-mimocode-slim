@@ -22,8 +22,8 @@ jobs:
         run: |
           for hook in hooks/*.ts; do
             echo "Validating $hook..."
-            bun build "$hook" --no-bundle --no-optimize 2>&1 || {
-              echo "Hook validation failed: $hook"
+            bun --check "$hook" 2>&1 || {
+              echo "Hook syntax invalid: $hook"
               exit 1
             }
           done
