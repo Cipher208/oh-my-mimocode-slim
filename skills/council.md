@@ -57,25 +57,22 @@ This dispatches 4 councillors (alpha, beta, gamma, delta) with different models,
 ### Step 1: Dispatch Councillors (parallel)
 
 Use `delegate_task` with `tasks: [...]` to dispatch 4 councillors simultaneously. Each gets:
-- Same prompt (the original question)
-- Different model (via model override)
-- Read-only tools only (no edit/write/bash)
+- Same question
+- Different model + temperature (from councillor_seats in `agent-prompts.json`)
+- Read-only tools only
 
-**Model assignment:**
-- **alpha:** `deepseek/deepseek-v4-flash` (your default)
-- **beta:** `google/gemini-3.5-flash-lite` (if available)  
-- **gamma:** `moonshotai/kimi-k3` (if available)
-- **delta:** fallback model or repeat alpha with different temperature
+**Councillor seats (from agent-prompts.json -> councillor_seats):**
 
-**Prompt template per councillor:**
-```
-You are councillor {seat} answering a question for the Council consensus.
-Give your honest, direct assessment. Don't hedge. State what's right/wrong
-and what you'd do in this situation. Keep under 150 words unless details needed.
+| Seat | Model | Temperature | Persona |
+|------|-------|-------------|---------|
+| **alpha** | deepseek/deepseek-v4-flash | 0.3 | analysis-first |
+| **beta** | google/gemini-3.5-flash-lite | 0.3 | broad-context |
+| **gamma** | moonshotai/kimi-k3 | 0.3 | deep-thinking |
+| **delta** | deepseek/deepseek-v4-flash | 0.7 | creative-alternative |
 
-Question: {original_question}
-
-Answer as councillor {seat}:
+**Prompt template:** Load from `agents.councillor_template` in agent-prompts.json via:
+```bash
+bun scripts/prompt-loader.mjs councillor_template "question here"
 ```
 
 ### Step 2: Wait for all responses

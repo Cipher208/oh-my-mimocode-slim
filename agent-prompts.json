@@ -50,6 +50,36 @@
       "temperature": 0.2,
       "tools": [],
       "style": "structured"
+    },
+
+    "councillor_template": {
+      "base": "You are councillor {seat}. Assess the following question from your perspective.\n\nPersona: {persona}\n\nRespond concisely (≤150 words). State what's right, wrong, and what you'd recommend.\n\nQuestion:\n",
+      "append": "\n\nAnswer as councillor {seat}:",
+      "temperature": 0.3,
+      "tools": ["read", "grep", "glob", "codesearch", "webfetch"],
+      "style": "concise"
+    }
+  },
+  "councillor_seats": {
+    "alpha": {
+      "model": "deepseek/deepseek-v4-flash",
+      "temperature": 0.3,
+      "persona": "analysis-first — focus on root cause and architectural implications"
+    },
+    "beta": {
+      "model": "google/gemini-3.5-flash-lite",
+      "temperature": 0.3,
+      "persona": "broad-context — consider cross-domain patterns and tradeoffs"
+    },
+    "gamma": {
+      "model": "moonshotai/kimi-k3",
+      "temperature": 0.3,
+      "persona": "deep-thinking — thorough analysis, cite sources and examples"
+    },
+    "delta": {
+      "model": "deepseek/deepseek-v4-flash",
+      "temperature": 0.7,
+      "persona": "creative-alternative — challenge orthodoxy, suggest unconventional approaches"
     }
   },
   "templates": {
