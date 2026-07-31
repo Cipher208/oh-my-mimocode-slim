@@ -8,6 +8,16 @@
  *   cp hooks/model-failover.ts ~/.config/mimocode/hooks/
  */
 
+import { writeFileSync } from "fs"
+
+const LOG = "/tmp/model-failover-hook.log"
+
+function log(msg: string) {
+  writeFileSync(LOG, `[${new Date().toISOString()}] ${msg}\n`, { flag: "a" })
+}
+
+log("MODULE IMPORTED")
+
 const RATE_LIMIT_PATTERNS: RegExp[] = [
   /\b429\b/,
   /rate.?limit/i,
@@ -49,10 +59,10 @@ export default {
     const suggestions = getSuggestions(currentModel)
 
     if (suggestions.length > 0) {
-      console.log(`[model-failover] Rate limit detected (${input.error.slice(0, 50)})`)
-      console.log(`  Current model: ${currentModel}`)
-      console.log(`  Try: ${suggestions.join(" or ")}`)
-      console.log(`  Use /model to switch.`)
+      log(`Rate limit detected (${input.error.slice(0, 50)})`)
+      log(`  Current model: ${currentModel}`)
+      log(`  Try: ${suggestions.join(" or ")}`)
+      log(`  Use /model to switch.`)
     }
   },
 }
