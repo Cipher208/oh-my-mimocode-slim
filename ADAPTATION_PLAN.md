@@ -2,9 +2,57 @@
 
 ## Summary of Findings
 
-Research of https://github.com/alvinunreal/oh-my-opencode-slim revealed 9 high-value component categories for adaptation to MiMoCode.
+Research of https://github.com/alvinunreal/oh-my-opencode-slim revealed 10 high-value component categories for adaptation to MiMoCode (updated with agent orchestration).
 
-## Priority 1: HIGH — foreground-fallback (Error Recovery System)
+---
+
+## Priority 1: HIGH — Agent Orchestration System (Missing!)
+
+**Source:** `/tmp/oh-my-opencode-slim/src/agents/`
+- `index.ts` — agent registry & factory (368+ lines)
+- `orchestrator.ts` — main orchestrator agent (21.5K lines)
+- 9 specialized agents: council, councillor, designer, explorer, fixer, librarian, observer, oracle
+- Tests: `orchestrator.test.ts` (1.4K), `index.test.ts` (36.5K), others
+
+**What it does:**
+9 специализированных агентов с разными ролями:
+- **oracle** — strategic advisor, code review, architecture decisions
+- **librarian** — research & docs (context7, GitHub)
+- **explorer** — codebase navigation (grep, ast_grep, glob)
+- **fixer** — implementation specialist (no research)
+- **designer** — UI/UX specialist
+- **observer** — visual analysis (screenshots, PDFs)
+- **council/councillor** — многомодельный consensus (multiple LLMs voting)
+- **orchestrator** — dispatches agents, manages flow
+
+**Agent types:**
+```typescript
+export const ALL_AGENT_NAMES = [
+  "explorer", "librarian", "oracle", "designer", 
+  "fixer", "observer", "council", "councillor",
+  ...SUBAGENT_NAMES  // built-in: edit, test, etc
+]
+```
+
+**Key patterns:**
+- `AgentDefinition` interface: name, displayName, description, config, model override
+- `resolvePrompt()` — base/custom/append prompt resolution
+- `Permission model` per agent (read-only vs writable)
+- Councillor seats: alpha, beta, gamma, delta (multiple models simultaneously)
+
+**Adaptation for MiMoCode:**
+1. Create `mimocode-agents/` skill directory
+2. Convert agent prompts → MiMoCode skills (oracle, librarian, explorer, fixer already exist!)
+3. Implement council consensus pattern as skill chain
+4. Add `/agent <name>` slash command
+
+**Effort:** 6-8 hours (highest architectural impact)
+
+---
+
+## Priority 1b: HIGH — foreground-fallback (Error Recovery System)
+
+## Priority 2: HIGH — foreground-fallback (Error Recovery System)
 
 **Source:** `/tmp/oh-my-opencode-slim/src/hooks/foreground-fallback/`
 - `index.ts` — 26.9K lines, 49.9K lines tests
@@ -24,7 +72,7 @@ Research of https://github.com/alvinunreal/oh-my-opencode-slim revealed 9 high-v
 
 ---
 
-## Priority 2: HIGH — smartfetch Tools (Intelligent Web Fetch)
+## Priority 3: HIGH — smartfetch Tools (Intelligent Web Fetch)
 
 **Source:** `/tmp/oh-my-opencode-slim/src/tools/smartfetch/`
 - `tool.ts` — 31.9K lines
@@ -45,7 +93,7 @@ Research of https://github.com/alvinunreal/oh-my-opencode-slim revealed 9 high-v
 
 ---
 
-## Priority 3: HIGH — ast-grep Tools (AST Code Intelligence)
+## Priority 4: HIGH — ast-grep Tools (AST Code Intelligence)
 
 **Source:** `/tmp/oh-my-opencode-slim/src/tools/ast-grep/`
 - `tool.ts` — search/replace via AST patterns
@@ -144,17 +192,18 @@ Research of https://github.com/alvinunreal/oh-my-opencode-slim revealed 9 high-v
 
 ## Implementation Order
 
-1. **Week 1:** foreground-fallback (Priority 1)
-2. **Week 2:** smartfetch tools (Priority 2) + image-hook (Priority 4)
-3. **Week 3:** ast-grep tools (Priority 3) + cancel-task (Priority 7)
-4. **Week 4:** deepwork + worktrees skills (Priority 5+6) + remaining hooks (Priority 8)
+1. **Week 1:** Agent orchestration system (Priority 1) — oracle/librarian/explorer specialists
+2. **Week 2:** foreground-fallback (Priority 2) + ast-grep tools (Priority 4)
+3. **Week 3:** smartfetch tools (Priority 3) + image-hook (Priority 5)
+4. **Week 4:** deepwork + worktrees skills (Priority 6+7) + remaining tools/hooks
 
 ## Files Created
 
-- [x] `/home/murat/Projects/repos/oh-my-mimocode-slim/ADAPTATION_PLAN.md` — this plan
+- [x] `ADAPTATION_PLAN.md` — comprehensive adaptation plan
+- [ ] `skills/oracle.md` — strategic advisor agent
+- [ ] `skills/librarian.md` — research specialist agent  
+- [ ] `skills/explorer.md` — codebase navigation agent
+- [ ] `skills/council.md` — multi-model consensus agent
 - [ ] `hooks/foreground-fallback.ts` — error recovery system
-- [ ] `tools/smartfetch.ts` — intelligent web fetch
 - [ ] `tools/ast-grep.ts` — AST code intelligence
-- [ ] `hooks/image-hook.ts` — image processing
-- [ ] `skills/deepwork.md` — focus mode skill
-- [ ] `skills/worktrees.md` — git worktree management
+- [ ] `tools/smartfetch.ts` — intelligent web fetch
