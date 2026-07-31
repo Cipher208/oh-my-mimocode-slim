@@ -29,16 +29,25 @@ jobs:
           done
           echo "✅ All hooks validated"
 
-      - name: Check module imports
+      - name: Check hook exports
         run: |
+          # Only check actual hook files (exclude utility modules)
           for hook in hooks/*.ts; do
-            echo "Checking imports in $hook..."
+            basename=$(basename "$hook")
+            # Skip utility modules that don't export default
+            case "$basename" in
+              delegate-task-retry-patterns.ts)
+                echo "Skipping utility module: $basename"
+                continue
+                ;;
+            esac
+            echo "Checking exports in $hook..."
             grep -q 'export default' "$hook" || {
               echo "Missing export default in $hook"
               exit 1
             }
           done
-          echo "✅ All hooks have export default"
+          echo "✅ All hook files have export default"
 
   skills:
     name: Skills Validation
