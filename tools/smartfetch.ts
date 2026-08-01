@@ -13,6 +13,16 @@
  *   Copy to ~/.local/share/mimocode/tools/ (or use as MCP tool)
  */
 
+// --- Logging ---
+const LOG_FILE = "/tmp/smartfetch.log";
+
+function log(msg: string) {
+  try {
+    const fs = require("fs");
+    fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`);
+  } catch {}
+}
+
 // --- Simple LRU Cache (no external deps) ---
 interface CacheEntry {
   result: FetchResult;
@@ -99,6 +109,7 @@ export interface SmartfetchOptions {
   saveBinary?: boolean;
   timeout?: number;
   prompt?: string; // Optional LLM prompt for secondary processing
+  secondaryModels?: SecondaryModel[]; // Fallback LLMs for content processing
 }
 
 export interface FetchResult {
@@ -348,6 +359,33 @@ export async function smartFetch(
         result.text = await response.text();
       }
 
+      // Secondary model fallback — process content with LLM
+      if (options.prompt && options.secondaryModels && options.secondaryModels.length > 0) {
+        const decision = decideSecondaryModelUse(
+          result.markdown || result.text || "",
+          options.prompt,
+          options.secondaryModels
+        );
+
+        if (decision.use) {
+          try {
+            const secondaryResult = await runSecondaryModelWithFallback(
+              result,
+              options.secondaryModels,
+              options.prompt
+            );
+            result.metadata.secondaryProcessing = {
+              model: secondaryResult.model,
+              processed: true,
+            };
+            log(`Secondary model ${secondaryResult.model} processed content`);
+          } catch (e: any) {
+            log(`Secondary model failed: ${e.message}`);
+            // Continue with original content — don't fail the fetch
+          }
+        }
+      }
+
       CACHE.set(cacheKey, result);
       return result;
 
@@ -408,6 +446,94 @@ export default {
   extractMainContent,
   htmlToMarkdown,
   probeLlmsTxt,
+  decideSecondaryModelUse,
+  runSecondaryModelWithFallback,
   MAX_RESPONSE_BYTES,
   DEFAULT_TIMEOUT_SECONDS,
 };
+
+// --- Secondary model fallback (from openagent) ---
+
+export interface SecondaryModel {
+  model: string;
+  prompt?: string;
+  description?: string;
+}
+
+export const SECONDARY_MODEL_TIMEOUT_MS = 30_000;
+export const MIN_WORDS_FOR_SECONDARY = 25;
+
+/**
+ * Decide whether to use secondary model for content processing.
+ */
+export function decideSecondaryModelUse(
+  content: string,
+  prompt: string | undefined,
+  secondaryModels: SecondaryModel[],
+) {
+  if (!prompt?.trim()) return { use: false, reason: "no_prompt" };
+  if (!secondaryModels.length) return { use: false, reason: "no_secondary_model_configured" };
+  if (!content.trim()) return { use: false, reason: "empty_content" };
+  const wordCount = content.trim().split(/\s+/).length;
+  if (wordCount < MIN_WORDS_FOR_SECONDARY) return { use: false, reason: "content_too_short" };
+  return { use: true, reason: "prompt_present" };
+}
+
+/**
+ * Run content through secondary model with fallback across models.
+ */
+export async function runSecondaryModelWithFallback(
+  fetchResult: FetchResult,
+  secondaryModels: SecondaryModel[],
+  defaultPrompt: string,
+  timeoutMs = SECONDARY_MODEL_TIMEOUT_MS,
+): Promise<{ text: string; model: string; success: boolean }> {
+  let lastError: Error | null = null;
+  const content = fetchResult.markdown || fetchResult.text || "";
+
+  for (const modelConfig of secondaryModels) {
+    const model = modelConfig.model;
+    const prompt = modelConfig.prompt || defaultPrompt;
+
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+      const response = await fetch("http://localhost:8787/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.OPENAI_API_KEY || ""}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: prompt },
+            { role: "user", content },
+          ],
+          max_tokens: 4096,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+      if (!response.ok) throw new Error(`Model ${model} failed: ${response.status}`);
+
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content || "";
+      const trimmed = text.trim();
+
+      if (!trimmed || /^no response from secondary model\.?$/i.test(trimmed)) {
+        lastError = new Error(`Model ${model} returned no usable text`);
+        continue;
+      }
+
+      return { text: trimmed, model, success: true };
+    } catch (error: any) {
+      lastError = error;
+      log(`Secondary model ${model} failed: ${error.message}`);
+    }
+  }
+
+  throw lastError || new Error("All secondary models failed");
+}
