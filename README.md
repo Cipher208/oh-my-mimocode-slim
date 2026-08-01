@@ -3,9 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MiMoCode](https://img.shields.io/badge/MiMoCode-%3E%3D0.38.0-blue.svg)](https://github.com/nicepkg/mimocode)
 
-> Multi-agent orchestration patterns for MiMoCode — adapted from oh-my-opencode-slim (7.3k ⭐).
+> Comprehensive MiMoCode enhancement suite — adapted from oh-my-opencode-slim + oh-my-openagent.
 
-Delegation rules, loop engineering, model failover, and error recovery — all via MiMoCode file hooks and compose skills.
+Multi-agent orchestration, intelligent web fetch, AST code search, error recovery, and A/B prompt testing — all via MiMoCode file hooks and skills.
 
 ## Quick Start
 
@@ -109,14 +109,65 @@ cp /tmp/oh-my-mimocode-slim/skills/*.md ~/.local/share/mimocode/skills-native/
 ### Selective install
 
 Pick what you need:
-- `hooks/orchestrator-routing.md` — delegation rules
-- `hooks/loop-engineering.md` — iterative tasks
-- `hooks/json-recovery.ts` — error hints
-- `hooks/model-failover.ts` — rate limit handling
+- **Hooks:** model-failover (19 error patterns + 7-level fallback), agent-dispatch (`/agent name`), rules-discovery (AGENTS.md walk-up), image-hook, json-recovery, phase-reminder, delegate-task-retry
+- **Skills:** council (multi-model consensus), oracle/librarian/explorer/fixer/observer/designer agents (all with structured permissions)
+- **Tools:** smartfetch (caching + metadata + secondary-model), ast-grep (25 languages), cancel-task
+- **Scripts:** prompt-loader (centralized prompts + inheritance + A/B testing)
+
+### Quick Examples
+
+```bash
+# Multi-model consensus
+/agent council "Should we use context-mode MCP for this project?"
+
+# Dispatch specialized agent
+/agent oracle "Review the plugin system architecture"
+
+# Intelligent web fetch with caching
+smartfetch https://example.com/docs --prompt "Summarize key points" --secondary-model gemini-flash
+
+# AST code search
+ast-grep search "export async function \$NAME" typescript
+
+# Cancel stuck task
+/cancel-task abc123-session "User aborted — switching approach"
+```
+
+## Prompt System
+
+Central configuration in `agent-prompts.json`:
+
+```bash
+# Load prompt with variables + versioning
+bun scripts/prompt-loader.mjs oracle "Review MCP hooks" --var:seat=alpha --version=v1.1
+
+# A/B testing
+bun scripts/prompt-loader.mjs oracle "question" --ab-test=v1.1-experimental
+
+# Metrics logged to /tmp/prompt-ab-metrics.log
+```
+
+See agent-prompts.json for:
+- 7 agent prompt templates (oracle, librarian, explorer, fixer, observer, designer, council)
+- 4 councillor seats (alpha/beta/gamma/delta with different models)
+- A/B testing variants + traffic splits
+- Metrics logging config
 
 ## Architecture
 
-See [docs/architecture.md](docs/architecture.md) for details on how hooks and skills work.
+- **`ADAPTATION_PLAN.md`** — full adaptation roadmap (all complete)
+- **`docs/`** — research reports (agent orchestration, openagent survey)
+- **`agent-prompts.json`** — centralized prompt registry
+- **`scripts/prompt-loader.mjs`** — CLI tool for prompt resolution
+- **Hooks** — fire on MiMoCode events (session.start, chat.message, tool.execute.after)
+- **Skills** — loaded by MiMoCode as markdown with frontmatter config
+
+## Testing
+
+```bash
+bun install
+bun test        # 210 tests, 414 assertions
+```
 
 ## Based on
 

@@ -60,11 +60,12 @@ function isProjectRootWithSync(dir: string): boolean {
 
 async function makeTestFixture(files: Record<string, string>) {
   const dir = await mkdtemp(join(tmpdir(), "rules-test-"));
-  for (const [relPath, content] of Object.entries(files)) {
+  const tasks = Object.entries(files).map(async ([relPath, content]) => {
     const fullPath = join(dir, relPath);
     await mkdir(join(require("path").dirname(fullPath)), { recursive: true });
     await writeFile(fullPath, content, "utf8");
-  }
+  });
+  await Promise.all(tasks);
   return dir;
 }
 
