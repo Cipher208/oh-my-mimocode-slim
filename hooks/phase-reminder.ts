@@ -8,14 +8,6 @@
  *   cp hooks/phase-reminder.ts ~/.config/mimocode/hooks/
  */
 
-const WORKFLOW_PHASES = {
-  explore: "Discovery phase — gather context, understand the problem",
-  plan: "Planning phase — design approach, identify dependencies",
-  implement: "Implementation phase — write code, follow plan",
-  verify: "Verification phase — run tests, check behavior",
-  review: "Review phase — check quality, simplify, document",
-}
-
 export default {
   "experimental.chat.system.transform": async (
     input: { sessionID?: string; model: any },

@@ -28,14 +28,6 @@ function log(msg: string): void {
   }
 }
 
-function safeReadFile(path: string): string | null {
-  try {
-    return readFileSync(path, "utf8");
-  } catch {
-    return null;
-  }
-}
-
 // Directories searched for rule files (from openagent rules-engine)
 const RULE_DIRECTORIES = [
   ".omo/rules",
@@ -145,18 +137,6 @@ function getFileSize(path: string): number {
   } catch {
     return 0;
   }
-}
-
-// Simple glob matching for rule files (subset of picomatch)
-function matchGlob(pattern: string, path: string): boolean {
-  // Support *, **, ?, [abc] simplified
-  if (pattern === "*") return true;
-  if (pattern.includes("**")) {
-    const regex = new RegExp("^" + pattern.replace(/\*\*/g, ".*").replace(/\*/g, "[^/]+").replace(/\?/g, "[^/]").replace(/\[([^\]]+)\]/g, "($1)") + "$");
-    return regex.test(path);
-  }
-  const regex = new RegExp("^" + pattern.replace(/\*/g, "[^/]+").replace(/\?/g, ".") + "$");
-  return regex.test(path);
 }
 
 export default {

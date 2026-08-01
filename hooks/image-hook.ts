@@ -13,8 +13,8 @@
  *   cp hooks/image-hook.ts ~/.config/mimocode/hooks/
  */
 
-import { writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, statSync, rmdirSync } from "fs";
-import { basename, extname, join } from "path";
+import { writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
+import { join } from "path";
 
 const LOG_FILE = "/tmp/image-hook.log";
 
