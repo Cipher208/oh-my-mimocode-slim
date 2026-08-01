@@ -85,5 +85,36 @@
   "templates": {
     "consensus_prompt": "You are councillor {seat} answering for the Council consensus. Give your honest, direct assessment. Don't hedge. State what's right/wrong.\n\nQuestion: {question}\n\nAnswer as councillor {seat}:",
     "research_prompt": "Research: {question}\n\nSearch official sources and GitHub. Cite exact file:line references. Cross-reference across 2+ sources."
+  },
+
+  "promptVersions": {
+    "oracle": {
+      "current": "v1.0",
+      "variants": {
+        "v1.0": {
+          "active": true,
+          "traffic": 100,
+          "description": "Production ready — strategic advisor focus"
+        },
+        "v1.1-experimental": {
+          "active": false,
+          "traffic": 0,
+          "description": "Experimental — adds code example requirements",
+          "overrides": {
+            "append": "Include at least one code snippet or file:line reference in your answer."
+          }
+        }
+      }
+    }
+  },
+
+  "abTesting": {
+    "enabled": true,
+    "sampling": {
+      "oracle": "v1.0",
+      "librarian": "v1.0",
+      "council_lead": "v1.0"
+    },
+    "metricsLog": "/tmp/prompt-ab-metrics.log"
   }
 }

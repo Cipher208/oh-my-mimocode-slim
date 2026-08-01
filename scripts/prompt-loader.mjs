@@ -15,6 +15,23 @@ import { resolve } from 'node:path';
 
 const PROMPTS_FILE = resolve(import.meta.dirname, '..', 'agent-prompts.json');
 
+// --- A/B test metrics logging ---
+function logMetrics(agentName, variant, extra = {}) {
+  let metricPrompts;
+  try {
+    metricPrompts = loadPrompts();
+    const metricsLog = metricPrompts.abTesting?.metricsLog || "/tmp/prompt-ab-metrics.log";
+    const fs = require("fs");
+    const entry = {
+      timestamp: new Date().toISOString(),
+      agent: agentName,
+      variant: variant || "default",
+      ...extra
+    };
+    fs.appendFileSync(metricsLog, JSON.stringify(entry) + "\n");
+  } catch {}
+}
+
 function loadPrompts() {
   try {
     const content = readFileSync(PROMPTS_FILE, 'utf8');
@@ -89,11 +106,48 @@ function getPrompt(agentName, userQuestion, customPrompt = "", customAppend = ""
     resolvedPrompt += `\n${customAppend}`;
   }
 
+  // --- A/B Testing: apply variant overrides ---
+  const versionConfig = prompts.promptVersions?.[agentName];
+  let activeVariant = "v1.0";
+  let variantOverrides = {};
+
+  if (versionConfig?.variants) {
+    // Check explicit variant override
+    if (customPrompt && customPrompt.startsWith("variant:")) {
+      activeVariant = customPrompt.slice(8);
+    } else {
+      // Use active variant or highest traffic
+      const active = Object.entries(versionConfig.variants).find(([_, v]) => v && v.active);
+      const activeVariantName = active ? active[0] : "";
+      if (activeVariantName) activeVariant = activeVariantName;
+      if (active) activeVariant = active[0];
+    }
+
+    const variant = versionConfig.variants[activeVariant];
+    if (variant?.overrides) {
+      variantOverrides = variant.overrides;
+      // Apply overrides
+      if (variantOverrides.append) {
+        resolvedPrompt += `\n\n${variantOverrides.append}`;
+      }
+      if (variantOverrides.temperature !== undefined) {
+        return {
+          prompt: resolvedPrompt,
+          temperature: variantOverrides.temperature,
+          tools: variantOverrides.tools || agent.tools,
+          style: agent.style,
+          variant: activeVariant
+        };
+      }
+    }
+  }
+
   return {
     prompt: resolvedPrompt,
     temperature: agent.temperature,
     tools: agent.tools,
-    style: agent.style
+    style: agent.style,
+    variant: versionConfig ? activeVariant : undefined
   };
 }
 
@@ -114,14 +168,21 @@ function main() {
   const question = args[1] || "";
 
   if (!agentName || !question) {
-    console.log('Usage: bun scripts/prompt-loader.mjs <agent> "<question>" [--custom="..."] [--append="..."]');
-    console.log('       bun scripts/prompt-loader.mjs --list');
+    console.log('Usage: bun scripts/prompt-loader.mjs <agent> "<question>" [options]');
+    console.log('Options:');
+    console.log('  --custom="..."   Override base prompt');
+    console.log('  --append="..."   Append to prompt');
+    console.log('  --var:name=val   Inject variable {name}');
+    console.log('  --version=v1.1   Use specific prompt variant');
+    console.log('  --ab-test=100     Force A/B test 100% traffic to this variant');
+    console.log('  --list            List available agents');
     process.exit(1);
   }
 
   // Parse optional flags
   let customPrompt = "";
   let customAppend = "";
+  let forceVariant = "";
   const extraVars = {};
   for (let i = 2; i < args.length; i++) {
     if (args[i].startsWith('--custom=')) customPrompt = args[i].slice(9);
@@ -129,6 +190,15 @@ function main() {
     if (args[i].startsWith('--var:')) {
       const [key, ...valParts] = args[i].slice(6).split('=');
       if (key) extraVars[key] = valParts.join('=');
+    }
+    if (args[i].startsWith('--version=')) {
+      forceVariant = args[i].slice(10);
+      customPrompt = `variant:${forceVariant}`; // signal variant selection
+    }
+    if (args[i].startsWith('--ab-test=')) {
+      const variant = args[i].slice(10);
+      extraVars['ab_test_variant'] = variant;
+      log(`A/B test forced to ${variant} for ${agentName}`);
     }
   }
 
