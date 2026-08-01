@@ -233,6 +233,31 @@ export const ALL_AGENT_NAMES = [
 2. Each reviews plan independently, then we synthesize defensible insights
 3. Use compose:debate pattern for cross-critique
 
+## Smartfetch + Prompt Loader Improvements (Planned)
+
+### Smartfetch Enhancements:
+1. **Secondary model fallback** — when primary content extraction fails, retry with alternative approach
+2. **Permission patterns** — URL allowlist/denylist for security control
+3. **Content truncation** — better preview for large pages (extract key section)
+4. **Metadata enrichment** — OpenGraph tags, authors, publication dates
+
+### Prompt Loader Enhancements:
+1. **Variable injection** — `{agent_name}`, `{current_dir}`, `{timestamp}`, `{cwd}`
+2. **Prompt versioning** — A/B test variants (`prompt_version: "v2-experimental"`)
+3. **Fallback chain** — if primary prompt fails, try alternatives
+4. **Metrics tracking** — log prompt effectiveness (response length, tool calls)
+
+### Implementation Order:
+1. Variable injection (Priority 10) — 1h
+2. Prompt versioning (Priority 10) — 1h  
+3. Fallback chain (Priority 10) — 1.5h
+4. Secondary model fallback for smartfetch (Priority 11) — 2h
+5. Permission patterns for smartfetch (Priority 11) — 1.5h
+6. Content truncation + metadata (Priority 11) — 2h
+7. Metrics tracking (Priority 12) — 1h
+
+---
+
 ### Model Failover Upgrade:
 Current: single fallback. New chain from delegate-core:
 ```
@@ -305,11 +330,11 @@ Then implement Improvements (unioned prompt loader, structured permissions, etc.
 | Enhancement | Status | Files | Tests |
 |-------------|--------|-------|-------|
 | Structured permissions | ✅ DONE | All 7 agent skills | — |
-| Unioned prompt loader | ✅ DONE | `agent-prompts.json`, `scripts/prompt-loader.mjs` | 11 pass |
-| Multi-model councillors | ✅ DONE | `councillor_seats` + `councillor_template` in prompts.json | 11 pass |
-| Prompt inheritance | ✅ DONE | Updated `prompt-loader.mjs` (custom + append) | 11 pass |
-| `/agent <name>` command | ✅ DONE | `hooks/agent-dispatch.ts` | 10 pass |
-| **Total tests** | | | **21 pass** |
+| Unioned prompt loader | ✅ DONE | `agent-prompts.json`, `scripts/prompt-loader.mjs` | 18 pass |
+| Multi-model councillors | ✅ DONE | `councillor_seats` + `councillor_template` | 18 pass |
+| Prompt inheritance + variables | ✅ DONE | Updated loader (--custom/--append/--var) | 18 pass |
+| `/agent <name>` command | ✅ DONE | `hooks/agent-dispatch.ts` | 10 tests |
+| **Total tests** | | | **76 pass** |
 
 ## Files Created
 

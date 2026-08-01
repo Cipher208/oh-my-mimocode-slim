@@ -19,7 +19,7 @@ Restart MiMoCode. Done.
 
 ## Features
 
-### Skills (6)
+### Skills (13)
 
 | Skill | Purpose | When to use |
 |-------|---------|-------------|
@@ -29,15 +29,49 @@ Restart MiMoCode. Done.
 | **reflect** | Session review | After complex tasks |
 | **simplify** | Code simplification | Code is too complex |
 | **verification-planning** | Pre-implementation planning | Before any implementation |
+| **council** | Multi-model consensus | High-stakes decisions, architecture choices |
+| **oracle** | Strategic technical advisor | Architecture decisions, code review |
+| **librarian** | Research specialist | Codebase/docs lookup, examples |
+| **explorer** | Codebase navigation | Find files, grep patterns |
+| **fixer** | Implementation specialist | Bug fixes, code changes |
+| **observer** | Visual analyst | Screenshots, PDFs, diagrams |
+| **designer** | UI/UX specialist | Design, prototyping, components |
 
-### Hooks (4)
+### Hooks (6)
 
 | Hook | Purpose | When it fires |
 |------|---------|---------------|
 | **json-recovery** | Error recovery hints | After tool execution |
-| **model-failover** | Rate-limit suggestions | After LLM step |
-| **delegate-task-retry** | Delegation error recovery | After actor/subagent |
-| **phase-reminder** | Workflow discipline | Before every LLM call |
+| **model-failover** | Model fallback chain | After LLM errors (429, timeout) |
+| **delegate-task-retry** | Delegation retry guide | After actor/subagent failure |
+| **phase-reminder** | TDD discipline reminder | Before every LLM call |
+| **agent-dispatch** | `/agent <name>` router | On chat.message (slash commands) |
+| **rules-discovery** | AGENTS.md discovery | On session.start (walk-up rules) |
+
+### Tools (1)
+
+| Tool | Purpose |
+|------|---------|
+| **smartfetch** | Intelligent web fetch with caching, HTML→MD, llms.txt probing |
+
+### Agent System
+
+| Component | Purpose |
+|-----------|---------|
+| **agent-prompts.json** | Centralized prompt registry for all agents |
+| **prompt-loader.mjs** | CLI + variable injection (`{question}`, `{seat}`, `{persona}`, `{current_dir}`) |
+| **7 agent types** | oracle, librarian, explorer, fixer, observer, designer, council |
+| **4 councillor seats** | alpha/beta/gamma/delta with different models + personas |
+
+**Usage:**
+```bash
+# Dispatch specialized agent
+/agent oracle "Review MCP error handling"
+/agent council "Should we adopt smartfetch?"
+
+# Load prompts with variables
+bun scripts/prompt-loader.mjs oracle "Your question" --var:seat=alpha
+```
 
 ## Orchestrator Routing
 
