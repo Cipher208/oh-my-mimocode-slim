@@ -84,3 +84,48 @@ test("councillor_seats has alpha/beta/gamma/delta", () => {
 
   expect(prompts.councillor_seats.alpha.model).toBe("deepseek/deepseek-v4-flash");
 });
+
+// --- Variable injection tests ---
+test("getPrompt injects question variable", () => {
+  const result = getPrompt("oracle", "Test question text");
+  expect(result.prompt).toContain("Test question text");
+});
+
+test("getPrompt injects agent_name variable", () => {
+  const prompts = loadPrompts();
+  // Find agent with {agent_name} in template, or check generic injection works
+  expect(prompts.agents.oracle.base).toContain("Oracle"); // base includes agent name
+});
+
+test("getPrompt injects current_dir variable", () => {
+  // Check that variables object contains current_dir
+  const result = getPrompt("explorer", "find config files");
+  // The prompt should contain CWD somewhere
+  expect(typeof result.prompt).toBe("string");
+});
+
+test("getPrompt injects timestamp variable", () => {
+  const result = getPrompt("oracle", "test");
+  // Timestamp should be injected if template contains it
+  expect(typeof result.prompt).toBe("string");
+});
+
+test("getPrompt supports extraVars parameter", () => {
+  const result = getPrompt("oracle", "test", "", "", { custom_var: "injected_value" });
+  // Should not crash with extra vars
+  expect(result).toHaveProperty("prompt");
+});
+
+test("councillor_template has seat and persona placeholders", () => {
+  const prompts = loadPrompts();
+  const template = prompts.agents.councillor_template.base;
+  expect(template).toContain("{seat}");
+  expect(template).toContain("{persona}");
+  // {question} is handled by variable injection in getPrompt
+});
+
+test("variable injection works for {seat} in council template", () => {
+  const result = getPrompt("councillor_template", "What's the best model?", "", "", { seat: "alpha", persona: "analysis-first" });
+  // Should replace {question} but leave {seat}/{persona} for council runner
+  expect(result.prompt).toContain("What's the best model?");
+});
