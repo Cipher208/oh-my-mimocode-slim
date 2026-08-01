@@ -17,13 +17,12 @@ const LOG_FILE = "/tmp/rules-discovery-hook.log";
 function log(msg: string): void {
   try {
     readFileSync(LOG_FILE, "utf8"); // ensure exists
-    const fs = await import("fs");
+    const fs = require("fs");
     fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`);
   } catch {
     // first run — create file
     try {
-      readFileSync("/dev/null");
-      const fs = await import("fs");
+      const fs = require("fs");
       fs.writeFileSync(LOG_FILE, `[${new Date().toISOString()}] ${msg}\n`);
     } catch {}
   }
