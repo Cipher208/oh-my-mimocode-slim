@@ -30,7 +30,7 @@ function loadPrompts() {
  * 1. customPrompt replaces base entirely
  * 2. customAppend is appended after whichever base won
  */
-function getPrompt(agentName, userQuestion, customPrompt = "", customAppend = "") {
+function getPrompt(agentName, userQuestion, customPrompt = "", customAppend = "", extraVars) {
   const prompts = loadPrompts();
   const agent = prompts.agents[agentName];
 
@@ -44,11 +44,40 @@ function getPrompt(agentName, userQuestion, customPrompt = "", customAppend = ""
   // Build final prompt: base + question + append
   let resolvedPrompt = effectiveBase;
 
-  // Handle question insertion — use {question} placeholder or append
-  if (resolvedPrompt.includes('{question}')) {
-    resolvedPrompt = resolvedPrompt.replace(/{question}/g, userQuestion);
-  } else {
-    resolvedPrompt = `${resolvedPrompt}\n${userQuestion}`;
+  // Variable injection system
+  // Standard variables:
+  //   {question}    — user's question (from CLI arg)
+  //   {agent_name}  — name of the agent being invoked
+  //   {current_dir} — working directory
+  //   {timestamp}   — ISO timestamp
+  // Template-specific (council):
+  //   {seat}        — councillor seat name (alpha/beta/gamma/delta)
+  //   {persona}     — councillor persona description
+
+  const variables = {
+    question: userQuestion,
+    agent_name: agentName,
+    current_dir: process.cwd(),
+    timestamp: new Date().toISOString(),
+  };
+
+  // Merge in any additional variables from arguments
+  Object.assign(variables, extraVars);
+
+  // Replace all {variable_name} patterns
+  resolvedPrompt = resolvedPrompt.replace(/\{(\w+)\}/g, (match, varName) => {
+    if (varName in variables) return variables[varName];
+    if (varName === "seat" || varName === "persona") return match; // leave council placeholders
+    return match; // keep unknown placeholders
+  });
+
+  // If {question} was not in template, append question
+  if (!effectiveBase.includes('{question}')) {
+    // Check if {question} was already replaced (was present before)
+    const hadPlaceholder = /\{(\w+)\}/.test(effectiveBase) && !resolvedPrompt.includes('{question}');
+    if (!effectiveBase.includes('{question}')) {
+      resolvedPrompt = `${resolvedPrompt}\n${userQuestion}`;
+    }
   }
 
   // Append custom text after base
@@ -93,14 +122,21 @@ function main() {
   // Parse optional flags
   let customPrompt = "";
   let customAppend = "";
+  const extraVars = {};
   for (let i = 2; i < args.length; i++) {
     if (args[i].startsWith('--custom=')) customPrompt = args[i].slice(9);
     if (args[i].startsWith('--append=')) customAppend = args[i].slice(9);
+    if (args[i].startsWith('--var:')) {
+      const [key, ...valParts] = args[i].slice(6).split('=');
+      if (key) extraVars[key] = valParts.join('=');
+    }
   }
 
-  const result = getPrompt(agentName, question, customPrompt, customAppend);
+  const result = getPrompt(agentName, question, customPrompt, customAppend, extraVars);
   console.log(JSON.stringify(result, null, 2));
 }
+
+// Export getPrompt for programmatic use (includes variable injection)
 
 // Only run CLI if invoked directly (not imported as module)
 if (import.meta.url === `file://${process.argv[1]}`) {
