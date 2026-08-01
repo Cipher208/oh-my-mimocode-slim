@@ -2,16 +2,18 @@
 /**
  * Prompt loader for MiMoCode agent skills.
  * Loads centralized prompts from agent-prompts.json.
- * 
+ *
+ * Supports prompt inheritance: base + custom + append pattern.
+ *
  * Usage:
- *   bun scripts/prompt-loader.mjs oracle "What is the meaning of life?"
+ *   bun scripts/prompt-loader.mjs <agent-name> "<question>" [--custom="override"] [--append="extra"]
  *   bun scripts/prompt-loader.mjs --list
  */
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const PROMPTS_FILE = resolve(process.argv[1] ? resolve(__dirname, '..', 'agent-prompts.json') : 'agent-prompts.json');
+const PROMPTS_FILE = resolve(import.meta.dirname, '..', 'agent-prompts.json');
 
 function loadPrompts() {
   try {
@@ -23,25 +25,45 @@ function loadPrompts() {
   }
 }
 
-function getPrompt(agentName, userQuestion, style = 'default') {
+/**
+ * Prompt inheritance resolution (matches openagent resolvePrompt pattern):
+ * 1. customPrompt replaces base entirely
+ * 2. customAppend is appended after whichever base won
+ */
+function getPrompt(agentName, userQuestion, customPrompt = "", customAppend = "") {
   const prompts = loadPrompts();
   const agent = prompts.agents[agentName];
-  
+
   if (!agent) {
     console.error(`Unknown agent: ${agentName}`);
     console.error(`Available: ${Object.keys(prompts.agents).join(', ')}`);
     process.exit(1);
   }
-  
-  // Build full prompt: base + user question + append
-  let fullPrompt = agent.base + userQuestion;
-  
-  if (agent.append) {
-    fullPrompt += agent.append;
+
+  // Resolve base: customPrompt overrides, otherwise use agent.base
+  const effectiveBase = customPrompt && customPrompt.trim() !== "" ? customPrompt : agent.base;
+
+  // Build final prompt: base + question + append
+  let resolvedPrompt = effectiveBase;
+
+  // Handle question insertion — use {question} placeholder or append
+  if (resolvedPrompt.includes('{question}')) {
+    resolvedPrompt = resolvedPrompt.replace(/{question}/g, userQuestion);
+  } else {
+    resolvedPrompt = `${resolvedPrompt}\n${userQuestion}`;
   }
-  
+
+  // Append custom text after base
+  if (agent.append) {
+    resolvedPrompt += agent.append;
+  }
+
+  if (customAppend && customAppend.trim() !== "") {
+    resolvedPrompt += `\n${customAppend}`;
+  }
+
   return {
-    prompt: fullPrompt,
+    prompt: resolvedPrompt,
     temperature: agent.temperature,
     tools: agent.tools,
     style: agent.style
@@ -51,7 +73,7 @@ function getPrompt(agentName, userQuestion, style = 'default') {
 // CLI interface
 function main() {
   const args = process.argv.slice(2);
-  
+
   if (args[0] === '--list') {
     const prompts = loadPrompts();
     console.log('Available agents:');
@@ -60,18 +82,28 @@ function main() {
     }
     return;
   }
-  
+
   const agentName = args[0];
-  const question = args.slice(1).join(' ');
-  
+  const question = args[1] || "";
+
   if (!agentName || !question) {
-    console.log('Usage: bun scripts/prompt-loader.mjs <agent-name> "<question>"');
+    console.log('Usage: bun scripts/prompt-loader.mjs <agent> "<question>" [--custom="..."] [--append="..."]');
     console.log('       bun scripts/prompt-loader.mjs --list');
     process.exit(1);
   }
-  
-  const result = getPrompt(agentName, question);
+
+  // Parse optional flags
+  let customPrompt = "";
+  let customAppend = "";
+  for (let i = 2; i < args.length; i++) {
+    if (args[i].startsWith('--custom=')) customPrompt = args[i].slice(9);
+    if (args[i].startsWith('--append=')) customAppend = args[i].slice(9);
+  }
+
+  const result = getPrompt(agentName, question, customPrompt, customAppend);
   console.log(JSON.stringify(result, null, 2));
 }
 
 main();
+
+export { getPrompt, loadPrompts };
