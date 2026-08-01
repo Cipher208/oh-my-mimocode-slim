@@ -126,6 +126,18 @@ export interface FetchResult {
     description?: string;
     llmsTxtFound?: boolean;
     redirectChain: string[];
+    ogTitle?: string;
+    ogDescription?: string;
+    ogImage?: string;
+    ogUrl?: string;
+    author?: string;
+    publishedDate?: string;
+    allowedOrigins?: string[];
+    wordCount?: number;
+    readingTime?: number;
+    language?: string;
+    contentLength?: number;
+    secondaryProcessing?: { model: string; processed: boolean };
   };
 }
 
@@ -350,6 +362,22 @@ export async function smartFetch(
         const descMatch = content.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
         if (descMatch) result.metadata.description = descMatch[1].trim();
 
+        // --- Metadata enrichment from openagent extractHeaderMetadata ---
+        const metadata = extractMetadata(content);
+        Object.assign(result.metadata, metadata);
+
+        // --- Text metrics (word count + reading time) ---
+        const markdown = result.markdown || result.text || "";
+        const metrics = calculateTextMetrics(markdown);
+        result.metadata.wordCount = metrics.wordCount;
+        result.metadata.readingTime = metrics.readingTime;
+        result.metadata.language = metrics.language;
+        result.metadata.contentLength = Buffer.byteLength(markdown, "utf8");
+
+        // --- Permission patterns for URL allowlist ---
+        const permissionPatterns = buildPermissionPatterns(normalized.url, normalized.fallbackUrl);
+        result.metadata.allowedOrigins = [...buildAllowedOrigins(permissionPatterns)];
+
         // Probe for llms.txt on docs sites
         if (preferLlmsTxt === "auto" && isDocsLikeUrl(normalized.url)) {
           result.metadata.llmsTxtFound = await probeLlmsTxt(normalized.fallbackUrl);
@@ -451,6 +479,124 @@ export default {
   MAX_RESPONSE_BYTES,
   DEFAULT_TIMEOUT_SECONDS,
 };
+
+// --- Metadata enrichment (from openagent extractHeaderMetadata pattern) ---
+
+/**
+ * Extract OpenGraph and meta tags from HTML content.
+ */
+export function extractMetadata(html: string): {
+  title?: string;
+  description?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  ogUrl?: string;
+  author?: string;
+  publishedDate?: string;
+} {
+  const result: any = {};
+
+  // Standard meta tags
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if (titleMatch) result.title = titleMatch[1].trim();
+
+  const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+  if (descMatch) result.description = descMatch[1].trim();
+
+  // OpenGraph tags
+  const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+  if (ogTitle) result.ogTitle = ogTitle[1].trim();
+
+  const ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+  if (ogDesc) result.ogDescription = ogDesc[1].trim();
+
+  const ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+  if (ogImage) result.ogImage = ogImage[1].trim();
+
+  const ogUrl = html.match(/<meta[^>]*property=["']og:url["'][^>]*content=["']([^"']+)["']/i);
+  if (ogUrl) result.ogUrl = ogUrl[1].trim();
+
+  // Author (meta[name=author], article:author, etc.)
+  const authorMatch = html.match(
+    /<meta[^>]+(?:name=["']author["']|property=["']article:author["'])[^>]*content=["']([^"']+)["']/i
+  );
+  if (authorMatch) result.author = authorMatch[1].trim();
+
+  // Published date
+  const dateMatch = html.match(
+    /<meta[^>]+(?:name=["']date=["']|property=["']article:published_time["'])[^>]*content=["']([^"']+)["']/i
+  );
+  if (dateMatch) result.publishedDate = dateMatch[1].trim();
+
+  return result;
+}
+
+/**
+ * Calculate word count and estimated reading time.
+ * Standard reading speed: 200-250 words/minute.
+ */
+export function calculateTextMetrics(text: string): {
+  wordCount: number;
+  readingTime: number;
+  language: string;
+} {
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  const wordCount = words.length;
+  const readingTime = Math.ceil(wordCount / 225); // avg reading speed
+
+  // Basic language detection (Latin vs Cyrillic vs other)
+  const latinRatio = words.filter(w => /[a-zA-Z]/.test(w)).length / wordCount;
+  const cyrillicRatio = words.filter(w => /[а-яА-ЯёЁ]/.test(w)).length / wordCount;
+  
+  let language = "unknown";
+  if (latinRatio > 0.5) language = "latin";
+  else if (cyrillicRatio > 0.3) language = "cyrillic";
+  else if (wordCount > 0) language = "other";
+
+  return { wordCount, readingTime, language: wordCount > 0 ? language : "empty" };
+}
+
+// --- Permission patterns (from openagent network.ts buildPermissionPatterns) ---
+
+export interface PermissionPattern {
+  url: string;
+  origin: string;
+  allowed: boolean;
+}
+
+/**
+ * Build permission patterns for URL and fallback.
+ * Returns URLs that are safe to fetch — helps with allowlist checks.
+ */
+export function buildPermissionPatterns(url: string, fallbackUrl?: string): string[] {
+  const patterns = new Set<string>([url]);
+  
+  if (fallbackUrl) patterns.add(fallbackUrl);
+
+  try {
+    const origin = new URL(url).origin;
+    patterns.add(`${origin}/llms.txt`);
+    patterns.add(`${origin}/llms-full.txt`);
+  } catch {}
+
+  return [...patterns];
+}
+
+/**
+ * Check if URL origin is in allowed origins set.
+ */
+export function buildAllowedOrigins(patterns: string[]): Set<string> {
+  const origins = new Set<string>();
+  for (const pattern of patterns) {
+    try {
+      origins.add(new URL(pattern).origin);
+    } catch {
+      // ignore invalid patterns
+    }
+  }
+  return origins;
+}
 
 // --- Secondary model fallback (from openagent) ---
 
