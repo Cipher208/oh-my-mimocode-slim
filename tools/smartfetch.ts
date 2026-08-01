@@ -13,6 +13,15 @@
  *   Copy to ~/.local/share/mimocode/tools/ (or use as MCP tool)
  */
 
+// --- Secure API key access (avoids bundling env vars into client code) ---
+// MiMoCode injects headers separately — secondary model calls go through
+// the agent's existing tool infrastructure, not direct API access.
+function getApiKey(): string {
+  // In MiMoCode plugin context, the framework handles auth.
+  // This is a no-op placeholder — real auth is via headroom proxy.
+  return "";
+}
+
 // --- Logging ---
 const LOG_FILE = "/tmp/smartfetch.log";
 
@@ -649,7 +658,7 @@ export async function runSecondaryModelWithFallback(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.OPENAI_API_KEY || ""}`,
+          "Authorization": `Bearer ${getApiKey()}`,
         },
         body: JSON.stringify({
           model,

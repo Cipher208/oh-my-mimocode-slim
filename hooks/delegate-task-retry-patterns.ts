@@ -10,7 +10,7 @@ export interface DelegateErrorPattern {
   fixHint: string
 }
 
-export const DELEGATE_TASK_ERROR_PATTERNS: DelegateErrorPattern[] = [
+const DELEGATE_TASK_ERROR_PATTERNS: DelegateErrorPattern[] = [
   {
     pattern: /agent not found|unknown agent|invalid agent/i,
     errorType: "agent_not_found",

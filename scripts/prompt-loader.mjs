@@ -130,6 +130,7 @@ function getPrompt(agentName, userQuestion, customPrompt = "", customAppend = ""
       if (variantOverrides.append) {
         resolvedPrompt += `\n\n${variantOverrides.append}`;
       }
+      logMetrics(agentName, activeVariant); // Track variant usage
       if (variantOverrides.temperature !== undefined) {
         return {
           prompt: resolvedPrompt,
