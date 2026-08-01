@@ -204,6 +204,14 @@ function main() {
   }
 
   const result = getPrompt(agentName, question, customPrompt, customAppend, extraVars);
+
+  // Log A/B test metric
+  logMetrics(agentName, result.variant, {
+    wordCount: result.prompt.split(/\s+/).length,
+    hasCustom: !!customPrompt,
+    hasAppend: !!customAppend
+  });
+
   console.log(JSON.stringify(result, null, 2));
 }
 
