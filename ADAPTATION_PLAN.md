@@ -300,6 +300,17 @@ temperature: 0.1
 
 Then implement Improvements (unioned prompt loader, structured permissions, etc.)
 
+## Improvements Status
+
+| Enhancement | Status | Files | Tests |
+|-------------|--------|-------|-------|
+| Structured permissions | ✅ DONE | All 7 agent skills | — |
+| Unioned prompt loader | ✅ DONE | `agent-prompts.json`, `scripts/prompt-loader.mjs` | 11 pass |
+| Multi-model councillors | ✅ DONE | `councillor_seats` + `councillor_template` in prompts.json | 11 pass |
+| Prompt inheritance | ✅ DONE | Updated `prompt-loader.mjs` (custom + append) | 11 pass |
+| `/agent <name>` command | ✅ DONE | `hooks/agent-dispatch.ts` | 10 pass |
+| **Total tests** | | | **21 pass** |
+
 ## Files Created
 
 - [x] `ADAPTATION_PLAN.md` — comprehensive adaptation plan
@@ -312,6 +323,10 @@ Then implement Improvements (unioned prompt loader, structured permissions, etc.
 - [x] `skills/fixer.md` — implementation specialist skill ✅
 - [x] `skills/observer.md` — visual analysis skill ✅
 - [x] `skills/designer.md` — UI/UX specialist skill ✅
+- [x] `agent-prompts.json` — centralized prompt registry ✅
+- [x] `scripts/prompt-loader.mjs` — prompt loader + inheritance ✅
+- [x] `hooks/agent-dispatch.ts` — `/agent <name>` slash command ✅
+- [x] `test/prompt-loader.test.ts` — 11 tests ✅
+- [x] `test/agent-dispatch.test.ts` — 10 tests ✅
 - [ ] `tools/smartfetch.ts` — intelligent web fetch
 - [ ] `tools/ast-grep.ts` — AST code intelligence
-- [ ] `hooks/foreground-fallback.ts` — error recovery system
