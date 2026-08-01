@@ -35,9 +35,7 @@ function getPrompt(agentName, userQuestion, customPrompt = "", customAppend = ""
   const agent = prompts.agents[agentName];
 
   if (!agent) {
-    console.error(`Unknown agent: ${agentName}`);
-    console.error(`Available: ${Object.keys(prompts.agents).join(', ')}`);
-    process.exit(1);
+    throw new Error(`Unknown agent: ${agentName}. Available: ${Object.keys(prompts.agents).join(', ')}`);
   }
 
   // Resolve base: customPrompt overrides, otherwise use agent.base
@@ -104,6 +102,9 @@ function main() {
   console.log(JSON.stringify(result, null, 2));
 }
 
-main();
+// Only run CLI if invoked directly (not imported as module)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
 
 export { getPrompt, loadPrompts };
