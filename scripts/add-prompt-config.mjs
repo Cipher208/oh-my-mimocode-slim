@@ -4,7 +4,9 @@
  * Inserts before "## Integration" section.
  */
 
-const HOME = process.env.HOME || '/home/murat';
+import { homedir } from 'node:os';
+
+const HOME = process.env.HOME || homedir();
 const SKILLS_DIR = `${HOME}/.local/share/mimocode/skills-native`;
 
 const SKILLS = ['librarian', 'fixer', 'observer', 'explorer', 'designer', 'council'];

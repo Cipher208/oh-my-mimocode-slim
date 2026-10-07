@@ -5,9 +5,10 @@
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 
-const HOME = process.env.HOME || '/home/murat';
+const HOME = process.env.HOME || homedir();
 const SKILLS_DIR = resolve(HOME, '.local/share/mimocode/skills-native');
 
 const AGENTS = ['librarian', 'fixer', 'observer', 'explorer', 'designer', 'council'];

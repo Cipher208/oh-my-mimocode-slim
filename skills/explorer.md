@@ -98,10 +98,10 @@ Load via: `bun scripts/prompt-loader.mjs explorer "question"`
 ```
 <results>
 <files>
-- /home/murat/.hermes/hermes-agent/tools/mcp_tool.py:3212 - stdio MCP server lifecycle
-- /home/murat/.hermes/hermes-agent/tools/mcp_tool.py:4117 - circuit breaker on tool call
-- /home/murat/.hermes/hermes-agent/tools/mcp_tool.py:2348 - reconnect backoff
-- /home/murat/.hermes/hermes-agent/tools/mcp_tool.py:4256 - connection timeout handling
+- ~/.hermes/hermes-agent/tools/mcp_tool.py:3212 - stdio MCP server lifecycle
+- ~/.hermes/hermes-agent/tools/mcp_tool.py:4117 - circuit breaker on tool call
+- ~/.hermes/hermes-agent/tools/mcp_tool.py:2348 - reconnect backoff
+- ~/.hermes/hermes-agent/tools/mcp_tool.py:4256 - connection timeout handling
 </files>
 <answer>
 Error recovery is in MCPServerTask.run() — auto-reconnect with exponential backoff
